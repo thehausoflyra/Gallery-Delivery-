@@ -8,6 +8,8 @@ export type Json =
 
 export interface Database {
   public: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Views: Record<string, any>;
     Tables: {
       clients: {
         Row: {
@@ -28,6 +30,7 @@ export interface Database {
           email?: string;
           created_at?: string;
         };
+        Relationships: [];
       };
       galleries: {
         Row: {
@@ -63,6 +66,15 @@ export interface Database {
           is_published?: boolean;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "galleries_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       media_items: {
         Row: {
@@ -98,6 +110,15 @@ export interface Database {
           sort_order?: number;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "media_items_gallery_id_fkey";
+            columns: ["gallery_id"];
+            isOneToOne: false;
+            referencedRelation: "galleries";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       download_logs: {
         Row: {
@@ -121,6 +142,7 @@ export interface Database {
           client_ip?: string | null;
           downloaded_at?: string;
         };
+        Relationships: [];
       };
     };
     Functions: {
