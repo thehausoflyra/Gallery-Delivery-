@@ -91,6 +91,23 @@ export default function GalleryDetailPage() {
     setGallery((prev) => prev ? { ...prev, is_published: newValue } : prev);
   };
 
+  const handleDeleteAllMedia = async () => {
+    if (mediaItems.length === 0) return;
+    if (!confirm(`Delete all ${mediaItems.length} photo${mediaItems.length !== 1 ? "s" : ""} from this gallery? This cannot be undone.`)) return;
+
+    const supabase = createClient();
+    const mediaPaths = mediaItems.map((m) => m.storage_path);
+    const thumbPaths = mediaItems.filter((m) => m.thumbnail_path).map((m) => m.thumbnail_path!);
+
+    await supabase.storage.from("gallery-media").remove(mediaPaths);
+    if (thumbPaths.length > 0) {
+      await supabase.storage.from("thumbnails").remove(thumbPaths);
+    }
+    await supabase.from("media_items").delete().eq("gallery_id", id);
+
+    setMediaItems([]);
+  };
+
   const handleDeleteGallery = async () => {
     if (!gallery) return;
     if (!confirm(`Delete gallery "${gallery.title}"? This will delete all media and cannot be undone.`)) return;
@@ -227,9 +244,17 @@ export default function GalleryDetailPage() {
 
         {/* Media grid */}
         <div>
-          <h2 className="text-sm font-medium text-[#888] uppercase tracking-wider mb-4">
-            Media ({mediaItems.length})
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-medium text-[#888] uppercase tracking-wider">
+              Media ({mediaItems.length})
+            </h2>
+            {mediaItems.length > 0 && (
+              <Button variant="destructive" size="sm" onClick={handleDeleteAllMedia}>
+                <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                Delete all photos
+              </Button>
+            )}
+          </div>
           <MediaGrid
             items={mediaItems}
             supabaseUrl={SUPABASE_URL}
